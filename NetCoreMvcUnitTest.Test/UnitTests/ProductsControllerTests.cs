@@ -4,6 +4,7 @@ using NetCoreMvcUnitTest.MVC.Controllers;
 using NetCoreMvcUnitTest.MVC.Data;
 using NetCoreMvcUnitTest.MVC.Models;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace NetCoreMvcUnitTest.Test.UnitTests
@@ -32,6 +33,20 @@ namespace NetCoreMvcUnitTest.Test.UnitTests
             var result = await _controller.Index();
 
             Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public async void Index_ActionExecutes_ReturnsProductList()
+        {
+            _repository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(products);
+
+            var result = await _controller.Index();
+            
+            var viewResult = Assert.IsType<ViewResult>(result);
+
+            var productList = Assert.IsAssignableFrom<IEnumerable<Product>>(viewResult.Model);
+
+            Assert.Equal<int>(2, productList.Count());
         }
     }
 }
