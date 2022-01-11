@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetCoreMvcUnitTest.MVC.Data;
+using NetCoreMvcUnitTest.MVC.Data.Impl;
 
 namespace NetCoreMvcUnitTest.MVC
 {
