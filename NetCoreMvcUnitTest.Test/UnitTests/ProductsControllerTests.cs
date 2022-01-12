@@ -95,6 +95,61 @@ namespace NetCoreMvcUnitTest.Test.UnitTests
 
         #endregion
 
+        #region Create
 
+        [Fact]
+        public void Create_Get_ReturnsView()
+        {
+            var actionResult = _controller.Create();
+            Assert.IsType<ViewResult>(actionResult);
+        }
+
+        [Fact]
+        public async void Create_Post_InvalidModelState_ReturnsViewWithProduct()
+        {
+            var product = new Product { Id = 1, Name = null, Color = "red", Price = 12, Stock = 33 };
+            _controller.ModelState.AddModelError("Name", "The Name field required.");
+
+            var actionResult = await _controller.Create(product);
+            var viewResult = Assert.IsType<ViewResult>(actionResult);
+
+            Assert.IsType<Product>(viewResult.Model);
+            Assert.False(viewResult.ViewData.ModelState.IsValid);
+        }
+
+        [Fact]
+        public async void Create_Post_ValidModelState_RedirectToIndexAction()
+        {
+            var actionResult = await _controller.Create(products.First());
+            var redirectResult = Assert.IsType<RedirectToActionResult>(actionResult);
+
+            Assert.Equal("Index", redirectResult.ActionName);
+
+        }
+
+        [Fact]
+        public async void Create_Post_ValidModelState_CreateMethodExecutes()
+        {
+            Product newProduct = null;
+            _repository.Setup(x => x.CreateAsync(It.IsAny<Product>())).Callback<Product>(x => newProduct = x);
+
+            var result = await _controller.Create(products.First());
+
+            _repository.Verify(x => x.CreateAsync(It.IsAny<Product>()), Times.Once());
+
+            Assert.Equal(products.First().Id, newProduct.Id);
+        }
+
+        [Fact]
+        public async void Create_Post_InvalidModelState_NeverCreatePostExecutes()
+        {
+            _controller.ModelState.AddModelError("Name", "Name error");
+
+            var result = await _controller.Create(products.First());
+
+            _repository.Verify(x => x.CreateAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        #endregion
     }
 }
