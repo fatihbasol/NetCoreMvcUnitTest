@@ -65,8 +65,8 @@ namespace NetCoreMvcUnitTest.MVC.Controllers
         {
             if (id == null)
             {
-                return NotFound();
-            }
+                return RedirectToAction("Index");
+            }       
 
             var product = await _repository.GetByIdAsync((int)id);
             if (product == null)
@@ -81,7 +81,7 @@ namespace NetCoreMvcUnitTest.MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Stock,Color")] Product product)
+        public IActionResult Edit(int id, [Bind("Id,Name,Price,Stock,Color")] Product product)
         {
             if (id != product.Id)
             {

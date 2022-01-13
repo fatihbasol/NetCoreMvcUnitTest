@@ -151,5 +151,97 @@ namespace NetCoreMvcUnitTest.Test.UnitTests
         }
 
         #endregion
+
+        #region Edit
+
+        [Fact]
+        public async void Edit_IdIsNull_ReturnsRedirectToIndexAction()
+        {
+            var actionResult = await _controller.Edit(null);
+            var result = Assert.IsType<RedirectToActionResult>(actionResult);
+
+            Assert.Equal("Index", result.ActionName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        public async void Edit_ProductIsNull_ReturnsNotFound(int productId)
+        {
+            Product product = null;
+            _repository.Setup(x => x.GetByIdAsync(productId)).ReturnsAsync(product);
+            var actionResult = await _controller.Edit(productId);
+
+            var result = Assert.IsType<NotFoundResult>(actionResult);
+
+            Assert.Equal(404, result.StatusCode);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        public async void Edit_IdIsValid_ReturnsViewWithProduct(int productId)
+        {
+            var product = products.Find(x => x.Id == productId);
+            _repository.Setup(x => x.GetByIdAsync(productId)).ReturnsAsync(product);
+
+            var actionResult = await _controller.Edit(productId);
+
+            var viewResult = Assert.IsType<ViewResult>(actionResult);
+
+            var productResult = Assert.IsAssignableFrom<Product>(viewResult.Model);
+
+
+            Assert.Equal(product.Id, productResult.Id);
+            Assert.IsType<Product>(viewResult.Model);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public void Edit_Post_IdIsNotEqualProductId_ReturnNotFound(int id)
+        {
+            int invalidId = 99;
+            var result = _controller.Edit(invalidId, products.First(x => x.Id == id));
+
+            var redirect = Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public void Edit_Post_InvalidModelState_ReturnsViewWithGivenProduct(int id)
+        {
+            var updateProduct = products.First(x => x.Id == id);
+            _controller.ModelState.AddModelError("Name", "Name is required.");
+
+            var actionResult = _controller.Edit(id, updateProduct);
+
+            var viewResult = Assert.IsType<ViewResult>(actionResult);
+            var product = Assert.IsType<Product>(viewResult.Model);
+            Assert.Equal(updateProduct.Id, product.Id);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public void Edit_Post_ValidModelState_RedirectToIndexAction(int id)
+        {
+            var actionResult = _controller.Edit(id, products.First(x => x.Id == id));
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(actionResult);
+
+            Assert.Equal("Index", redirectResult.ActionName);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public void Edit_Post_ValidModelState_UpdateMethodExecutes(int id)
+        {
+            var updateProduct = products.First(x => x.Id == id);
+            _repository.Setup(x => x.Update(updateProduct));
+
+            var actionResult = _controller.Edit(id, updateProduct);
+
+            _repository.Verify(x => x.Update(It.IsAny<Product>()), Times.Once());
+        }
+
+        #endregion
     }
 }
