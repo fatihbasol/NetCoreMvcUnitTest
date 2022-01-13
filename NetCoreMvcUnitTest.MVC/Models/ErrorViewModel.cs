@@ -1,5 +1,3 @@
-using System;
-
 namespace NetCoreMvcUnitTest.MVC.Models
 {
     public class ErrorViewModel

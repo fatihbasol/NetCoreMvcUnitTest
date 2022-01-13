@@ -243,5 +243,65 @@ namespace NetCoreMvcUnitTest.Test.UnitTests
         }
 
         #endregion
+
+        #region Delete
+
+        [Fact]
+        public async void Delete_IdIsNull_ReturnsNotFoundResult()
+        {
+            var actionResult = await _controller.Delete(null);
+
+            Assert.IsType<NotFoundResult>(actionResult);
+        }
+
+        [Theory]
+        [InlineData(99)]
+        public async void Delete_ProductIsNull_ReturnsNotFoundResult(int id)
+        {
+            Product deleteProduct = null;
+            _repository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(deleteProduct);
+
+            var actionResult = await _controller.Delete(id);
+
+            var notFoundResult = Assert.IsType<NotFoundResult>(actionResult);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async void Delete_IdIsValid_ReturnsViewWithProduct(int id)
+        {
+            Product deleteProduct = products.First(x => x.Id == id);
+            _repository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(deleteProduct);
+
+            var actionResult = await _controller.Delete(id);
+
+            var viewResult = Assert.IsType<ViewResult>(actionResult);
+
+            var product = Assert.IsType<Product>(viewResult.Model);
+            Assert.Equal(deleteProduct.Id, product.Id);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async void DeleteConfirmed_ActionExecutes_ReturnsRedirectToIndexAction(int id)
+        {
+            var actionResult = await _controller.DeleteConfirmed(id);
+
+            Assert.IsType<RedirectToActionResult>(actionResult);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async void DeleteConfirmed_ActionExecutes_DeleteMethodExecute(int id)
+        {
+            var deleteProduct = products.First(x => x.Id == id);
+            _repository.Setup(x => x.Delete(deleteProduct));
+
+            await _controller.DeleteConfirmed(id);
+
+            _repository.Verify(x => x.Delete(It.IsAny<Product>()), Times.Once);
+        }
+
+        #endregion
     }
 }

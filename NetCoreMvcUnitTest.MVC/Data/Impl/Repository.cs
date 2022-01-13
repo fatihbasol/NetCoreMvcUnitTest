@@ -42,10 +42,10 @@ namespace NetCoreMvcUnitTest.MVC.Data.Impl
         {
             // state modified olarak işaretlendiğinde ve saveChanges metodu çağırıldığında ilgili entity nin tüm property lerini güncelleyecek sorguyu db ye gönderir.
             _context.Entry(entity).State = EntityState.Modified;
-            
+
             //aşağıdaki update metodu çağırıldığında ise sadece değişen property nin güncelleneceği sorguyu hazırlar. Performans açısından bu daha faydalıdır 
             //_context.Update(entity);
-            
+
             _context.SaveChanges();
         }
     }

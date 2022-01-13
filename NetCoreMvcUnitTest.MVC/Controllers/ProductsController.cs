@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetCoreMvcUnitTest.MVC.Data;
 using NetCoreMvcUnitTest.MVC.Models;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace NetCoreMvcUnitTest.MVC.Controllers
@@ -66,7 +65,7 @@ namespace NetCoreMvcUnitTest.MVC.Controllers
             if (id == null)
             {
                 return RedirectToAction("Index");
-            }       
+            }
 
             var product = await _repository.GetByIdAsync((int)id);
             if (product == null)
@@ -132,7 +131,7 @@ namespace NetCoreMvcUnitTest.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = _repository.GetByIdAsync(id).Result;
+            var product = await _repository.GetByIdAsync(id);
             _repository.Delete(product);
             return RedirectToAction(nameof(Index));
         }
